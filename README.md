@@ -3,6 +3,6 @@ A Discord bot currently used to find free games on EpicGames each week and make 
 
 Dependencies:
 npm
-> Puppeteer
-> Discord.js
-> Chromium
+* Puppeteer
+* Discord.js
+* Chromium
