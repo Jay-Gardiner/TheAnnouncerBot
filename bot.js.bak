@@ -1,0 +1,94 @@
+const Discord = require('discord.io');
+const logger = require('winston');
+const auth = require('./auth.json');
+const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
+
+const url = 'https://www.epicgames.com/store/en-US/';
+
+// Configure logger settings
+logger.remove(logger.transports.Console);
+logger.add(new logger.transports.Console, {
+    colorize: true
+});
+
+logger.level = 'debug';
+// Initialize Discord Bot
+var bot = new Discord.Client({
+   token: auth.token,
+   autorun: true
+});
+
+// Runs once the bot is setup on the server
+bot.on('ready', function (evt) {
+    logger.info('Connected');
+    logger.info('Logged in as: ' + bot.username + ' - (' + bot.id + ')');
+});
+
+// Function scrapes games from epicgames.com and dumps into an array
+function ScrapeEpicGames(channelID) {
+    var gamesList = [];
+
+    (() => {
+        puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']}).then(browser => {
+            browser.newPage().then(page => {
+                return page.goto(url, {waitUntil: 'networkidle2'}).then(() => {
+                    return page.content();
+                })
+            })
+            .then(html => {
+                const $ = cheerio.load(html);
+
+                const cards = $('section[class="CardGrid-groupWrapper_e669488f"] > .CardGrid-group_c5363b6a > div').each(function() {
+                    gamesList.push({
+                        title: $(this).find('.OfferTitleInfo-title_abc02a91').text(),
+                        dates: $(this).find('.OfferTitleInfo-subtitle_ad134671 > span').text(),
+                    });
+                });
+                browser.close()
+                PostFreeGames(gamesList, channelID);
+            });
+        })
+    })()
+}
+
+function PostFreeGames(gamesList, channelID) {
+    var freeGames = [];
+    var messageText = "";
+    //channelID = ;
+
+    // Sorts through list of games and grabs anything with a 'free' in the subtitle
+    for (var i = 0; i < gamesList.length; i++) {
+        if(gamesList[i].dates.includes('Free')) {
+            freeGames[i] = gamesList[i];
+            messageText = messageText.concat("**" + freeGames[i].title + "**" + " - " + freeGames[i].dates + "\n");
+        }
+    }
+
+    console.log(gamesList);
+    console.log(messageText);
+
+    // Send a message into the 'announcement' chat
+    bot.sendMessage({
+        to: "560827679360679946", //687095097921372220",
+        message: "▂▂▂▃▅▇█▓▒░█▒▒▒▒▒▒▒█☆@everyone☆█▒▒▒▒▒▒▒█░▒▓█▇▅▃▂▂▂" + "\n" + "･ ｡ﾟ☆: .☽ . :☆ﾟ. ───(ᵔᴥᵔ) | ❀ Public Service Announcement ❀ | (ᵔᴥᵔ)─── ･ ｡ﾟ☆: .☽ . :☆ﾟ\n                                      ❀ | Epic games have a free rotating game roster | ❀\n                           ❀ | This weeks current and upcoming games are listed below | ❀\n" + "===============================================================\n\n" + messageText + "\n",
+    });
+}
+
+bot.on('message', function (user, userID, channelID, message, evt) {
+    // The bot needs to know if it will execute a command
+    // It will listen for messages that will start with `!`
+    if (message.substring(0, 1) == '!') {
+        var args = message.substring(1).split(' ');
+        var cmd = args[0];
+   
+        args = args.splice(1);
+        switch(cmd) {
+        // Manual way to start the bot
+            case 'runtheannouncerbot':
+                ScrapeEpicGames(channelID);
+		setInterval(ScrapeEpicGames, 604800000);
+            break;
+        }
+    }
+})
