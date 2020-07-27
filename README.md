@@ -1,2 +1,8 @@
 # TheAnnouncerBot
-A Discord bot used to make @everyone posts for custom text or scheduled messages.
+A Discord bot currently used to find free games on EpicGames each week and make an @everyone post into any channel.
+
+Dependencies:
+npm
+> Puppeteer
+> Discord.js
+> Chromium
