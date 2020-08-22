@@ -48,10 +48,10 @@ function ScrapeEpicGames() {
             .then(html => {
                 const $ = cheerio.load(html);
 
-                const cards = $('section[class="CardGrid-groupWrapper_e669488f"] > .CardGrid-group_c5363b6a > div').each(function() {
+                const cards = $('section[data-component="CardGridDesktopBase"] > div > div').each(function() {
                     gamesList.push({
-                        title: $(this).find('.OfferTitleInfo-title_ed062ba4').text(),
-                        dates: $(this).find('.OfferTitleInfo-subtitle_30c79f0d > span').text(),
+                        title: $(this).find('span[data-testid="offer-title-info-title"]').text(),
+                        dates: $(this).find('span[data-testid="offer-title-info-subtitle"] > span').text(),
                     });
                 });
                 browser.close()
@@ -76,7 +76,7 @@ function PostFreeGames(gamesList) {
     console.log(gamesList);
     console.log(messageText);
 
-    var newMessage = "▂▂▂▃▅▇█▓▒░█▒▒▒▒▒▒▒█☆@everyone☆█▒▒▒▒▒▒▒█░▒▓█▇▅▃▂▂▂" + "\n" + "･ ｡ﾟ☆: .☽ . :☆ﾟ. ───(ᵔᴥᵔ) | ❀ Public Service Announcement ❀ | (ᵔᴥᵔ)─── ･ ｡ﾟ☆: .☽ . :☆ﾟ\n                                      ❀ | Epic games have a free rotating game roster | ❀\n                           ❀ | This weeks current and upcoming games are listed below | ❀\n" + "===============================================================\n\n" + messageText + "\n";
+    var newMessage = "▂▂▂▃▅▇█▓▒░█▒▒▒▒▒▒▒█☆@everyone☆█▒▒▒▒▒▒▒█░▒▓█▇▅▃▂▂▂" + "\n" + "･ ｡ﾟ☆: .☽ . :☆ﾟ. ───(ᵔᴥᵔ) | ❀ Public Service Announcement ❀ | (ᵔᴥᵔ)─── ･ ｡ﾟ☆: .☽ . :☆ﾟ\n                                      ❀ | Epic games list several games for free each week | ❀\n                           ❀ | The current and upcoming free games are list below | ❀\n" + "===============================================================\n\n" + messageText + "\n";
 
     client.channels.cache.get(annoucementsChannelID).send(newMessage);
 }
